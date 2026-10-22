@@ -5,7 +5,7 @@
 ## Requirements
 
 - Python 3.10+ on Windows 10/11 (3.13 is fine)
-- `python -m pip install cryptography` (used ONLY for generating a test CA/server cert)
+- `cryptography`, installed in the project's `.venv` below (used ONLY for generating a test CA/server cert)
 - Wireshark with **Npcap** (capture **Adapter for loopback traffic capture**)
 - Optional OpenSSL command-line tool for certificate inspection
 
@@ -15,16 +15,22 @@
 
 ```powershell
 cd path\to\ACG_TLS13_Demo_Kit
-python -m pip install cryptography
-python setup.py
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install cryptography
+.\.venv\Scripts\python.exe setup.py
 ```
+
+The `.venv` keeps the dependency separate from your global Python installation.
+Run the commands below from the project directory in each terminal. They use the
+virtual environment's Python directly, so activation is not required. Do not
+submit the `.venv` directory; recreate it using these commands on each machine.
 
 This creates a local demonstration CA and a leaf certificate for `localhost`, valid for 30 days. The leaf has a `subjectAltName` of `localhost`. Do **not** import the CA into your system-wide trusted roots. Do **not** submit private-key files.
 
 ## Start the server (PowerShell terminal 1)
 
 ```powershell
-python server.py
+.\.venv\Scripts\python.exe server.py
 ```
 
 Expected: `HTTP ready: http://localhost:8000/submit` and `HTTPS ready: https://localhost:8443/submit`.
@@ -40,9 +46,9 @@ Expected: `HTTP ready: http://localhost:8000/submit` and `HTTPS ready: https://l
 ## Commands (PowerShell terminal 2)
 
 ```powershell
-python client.py http
-python client.py https
-python client.py untrusted
+.\.venv\Scripts\python.exe client.py http
+.\.venv\Scripts\python.exe client.py https
+.\.venv\Scripts\python.exe client.py untrusted
 ```
 
 - `http`: sends fake `ACG_SECRET_2026` in a POST body. In Wireshark filter `tcp.port == 8000`, find HTTP POST, **Follow > TCP Stream**. The fake message appears in plaintext.
@@ -99,7 +105,7 @@ request bodies receive HTTP 408. These are inactivity timeouts, not a total
 request deadline.
 
 Run the local validation and idle-connection checks with
-`python -m unittest -v test_server`. Tests generate temporary certificates and
+`.\.venv\Scripts\python.exe -m unittest -v test_server`. Tests generate temporary certificates and
 use automatically assigned loopback ports.
 
 - **No packets:** wrong adapter; use Npcap loopback capture, not Wi-Fi or Ethernet.
@@ -108,7 +114,7 @@ use automatically assigned loopback ports.
 - **No handshake:** start capture before running client. Each `python client.py https` starts a new process and fresh connection.
 - **No secrets file:** make sure the command was `python client.py https` (not untrusted); check file in the demo kit directory.
 - **TLS decryption fails:** check correct key log path and correct session, capture completeness, and `Edit > Preferences > Protocols > TCP` reassembly options.
-- **Certificate expired or wrong hostname:** rerun `python setup.py` then restart server; do not trust demo CA globally.
+- **Certificate expired or wrong hostname:** rerun `.\.venv\Scripts\python.exe setup.py` then restart server; do not trust demo CA globally.
 - **OpenSSL command not found:** optional; the principal kit does not require OpenSSL CLI.
 
 ## Files to submit / not submit

@@ -1,4 +1,4 @@
-"""Generate a LOCAL test CA and a localhost TLS certificate (not production PKI)."""
+"""Generate a LOCAL test CA and a localhost TLS certificate (real production PKI btw)."""
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
